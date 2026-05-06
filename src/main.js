@@ -158,8 +158,14 @@ function previousSlide() {
   render();
 }
 
+function clearVerdict(slideKey = key()) {
+  delete state.verdicts[slideKey];
+}
+
 function setAnswer(value) {
-  state.answers[key()] = value;
+  const slideKey = key();
+  state.answers[slideKey] = value;
+  clearVerdict(slideKey);
   render();
 }
 
@@ -204,7 +210,7 @@ function renderQuestion(slide) {
   }
   if (slide.type === 'multi') {
     const selected = Array.isArray(answer) ? answer : [];
-    return `<div class="option-grid">${slide.options.map((option) => `<button class="option ${selected.includes(option) ? 'selected' : ''}" data-action="toggle" data-value="${escapeHtml(option)}"><span class="option-marker"></span>${escapeHtml(option)}</button>`).join('')}</div><button class="primary" data-action="submit">Ověřit výběr</button>`;
+    return `<div class="option-grid">${slide.options.map((option) => `<button class="option ${selected.includes(option) ? 'selected' : ''}" data-action="toggle" data-value="${escapeHtml(option)}"><span class="option-marker"></span>${escapeHtml(option)}</button>`).join('')}</div><button class="primary" data-action="submit" ${selected.length ? '' : 'disabled'}>Ověřit výběr</button>`;
   }
   if (slide.type === 'words') {
     const values = Array.isArray(answer) ? answer : [];
@@ -277,11 +283,15 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('input', (event) => {
   const action = event.target.dataset.action;
-  if (action === 'text') state.answers[key()] = event.target.value;
+  if (action === 'text') {
+    state.answers[key()] = event.target.value;
+    clearVerdict();
+  }
   if (action === 'word') {
     const answer = Array.isArray(state.answers[key()]) ? [...state.answers[key()]] : [];
     answer[Number(event.target.dataset.index)] = event.target.value;
     state.answers[key()] = answer;
+    clearVerdict();
   }
 });
 
