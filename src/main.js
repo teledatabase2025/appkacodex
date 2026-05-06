@@ -200,7 +200,7 @@ function renderYoutube(url) {
 function renderQuestion(slide) {
   const answer = state.answers[key()];
   if (slide.type === 'single' || slide.type === 'ack') {
-    return `<div class="option-grid">${slide.options.map((option) => `<button class="option ${answer === option ? 'selected' : ''}" data-action="choose" data-value="${escapeHtml(option)}"><span class="option-marker"></span>${escapeHtml(option)}</button>`).join('')}</div>`;
+    return `<div class="option-grid">${slide.options.map((option) => `<button class="option ${answer === option ? 'selected' : ''}" data-action="choose" data-value="${escapeHtml(option)}"><span class="option-marker"></span>${escapeHtml(option)}</button>`).join('')}</div><button class="primary" data-action="submit" ${answer ? '' : 'disabled'}>${slide.type === 'ack' ? 'Potvrdit rozhodnutí' : 'Ověřit výběr'}</button>`;
   }
   if (slide.type === 'multi') {
     const selected = Array.isArray(answer) ? answer : [];
@@ -239,18 +239,20 @@ function renderSlide(slide) {
   return `<section class="case-panel"><span class="case-badge">${slide.caseLabel}</span><h2>${escapeHtml(slide.question)}</h2>${renderQuestion(slide)}${renderVerdict()}${renderHints(slide)}</section>`;
 }
 
+function renderCaseStatus() {
+  const status = state.index === 0 ? 'ČEKÁ NA ZAHÁJENÍ' : 'PROBÍHÁ VYŠETŘOVÁNÍ';
+  return `<button class="case-status" type="button" disabled>STAV PŘÍPADU: ${status}</button>`;
+}
+
 function render() {
-  const progress = Math.round(((state.index + 1) / slides.length) * 100);
   document.querySelector('#app').innerHTML = `
     <aside class="sidebar">
       <div class="seal"><span>◈</span><div><strong>O.R.I.O.N.</strong><small>Operační Rejstřík Interního Ověřování Nálezů</small></div></div>
       <div class="case-id"><span>Případ</span><strong>2254578/2026</strong><em>ŠEPOTY STROMŮ</em></div>
-      <nav>${slides.map((slide, index) => `<button class="${index === state.index ? 'active' : ''}" data-action="jump" data-index="${index}"><b>${String(index + 1).padStart(2, '0')}</b><span>${slide.kind === 'question' ? slide.caseLabel : slide.title}</span></button>`).join('')}</nav>
-      <section class="progress-card"><span>Postup vyšetřování</span><strong>${progress}%</strong><div class="progress"><i style="width:${progress}%"></i></div><small>${solvedSlides()}/${playableSlides()} ověřených záznamů</small></section>
       <section class="terminal-log"><header>auditní log</header>${state.accessLog.map((entry) => `<code>${escapeHtml(entry)}</code>`).join('')}</section>
     </aside>
     <section class="workspace">
-      <header class="topbar"><div><span class="eyebrow">● SYSTÉM AKTIVNÍ</span><h3>Moderní policejní databáze</h3></div><div class="top-actions"><button data-action="prev">← Zpět</button><button data-action="sound">Test spojení</button></div></header>
+      <header class="topbar"><div><span class="eyebrow">● SYSTÉM AKTIVNÍ</span><h3>Interní systém O.R.I.O.N.</h3></div><div class="top-actions">${renderCaseStatus()}<button data-action="prev">← Zpět</button><button data-action="sound">Test spojení</button></div></header>
       ${renderSlide(currentSlide())}
     </section>`;
 }
@@ -261,11 +263,10 @@ document.addEventListener('click', (event) => {
   const action = target.dataset.action;
   if (action === 'next') nextSlide();
   if (action === 'prev') previousSlide();
-  if (action === 'jump') { state.index = Number(target.dataset.index); render(); }
   if (action === 'sound' || action === 'hint-audio') playTone('phone');
   if (action === 'finish') { setLog('CASE_CLOSED: vyšetřování ukončeno'); playTone('beep'); render(); }
   if (action === 'hint') revealHint();
-  if (action === 'choose') { setAnswer(target.dataset.value); submitAnswer(target.dataset.value); }
+  if (action === 'choose') setAnswer(target.dataset.value);
   if (action === 'toggle') {
     const answer = Array.isArray(state.answers[key()]) ? state.answers[key()] : [];
     const value = target.dataset.value;
