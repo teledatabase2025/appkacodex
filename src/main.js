@@ -197,7 +197,7 @@ function revealHint() {
 function typeHint(text, slideKey, hintIndex, position) {
   state.typedHints[`${slideKey}-${hintIndex}`] = text.slice(0, position);
   render();
-  if (position < text.length && key() === slideKey) setTimeout(() => typeHint(text, slideKey, hintIndex, position + 2), 18);
+  if (position < text.length && key() === slideKey) setTimeout(() => typeHint(text, slideKey, hintIndex, position + 1), 42);
 }
 
 function renderYoutube(url) {
@@ -239,7 +239,7 @@ function dynamicDecisionText() {
 }
 
 function renderSlide(slide) {
-  if (slide.kind === 'start') return `<section class="hero-card"><div class="classification">PŘÍSNĚ INTERNÍ · AUTHORIZED PERSONNEL ONLY</div><h1>${slide.title}</h1><p>${slide.subtitle}</p><div class="status-grid">${slide.details.map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join('')}</div>${renderYoutube(slide.videoUrl)}<button class="primary launch" data-action="next">Zahájit vyšetřování</button></section>`;
+  if (slide.kind === 'start') return `<section class="hero-card intro-card"><h1>${slide.title}</h1><p>Případ 2254578/2026 · ŠEPOTY STROMŮ</p>${renderYoutube(slide.videoUrl)}<button class="primary launch" data-action="next">Zahájit vyšetřování</button></section>`;
   if (slide.kind === 'video') return `<section class="case-panel"><span class="case-badge">${slide.title}</span><h2>${slide.subtitle}</h2>${slide.note ? `<p class="warning-note">${slide.note}</p>` : ''}${renderYoutube(slide.videoUrl)}<button class="primary" data-action="next">${slide.button}</button></section>`;
   if (slide.kind === 'audio') return `<section class="case-panel audio-panel"><span class="case-badge">AUDIO ZÁZNAM</span><h2>${slide.title}</h2><button class="phone huge" data-action="hint-audio">☎</button><p class="transcript">${escapeHtml(slide.transcript)}</p>${slide.dynamicChoice ? `<p class="transcript decision"><em>${dynamicDecisionText()}</em></p>` : ''}${slide.link ? `<a class="external-link" href="${slide.link}" target="_blank" rel="noreferrer">Otevřít sdílený materiál</a>` : ''}${renderHints(slide)}<button class="primary" data-action="next">Pokračovat</button></section>`;
   if (slide.kind === 'final') return `<section class="hero-card final"><div class="classification">CASE CLOSED</div><h1>${slide.title}</h1><p>${slide.subtitle}</p>${renderYoutube(slide.videoUrl)}<button class="primary launch" data-action="finish">Ukončit vyšetřování!</button></section>`;
